@@ -28,6 +28,16 @@ namespace HeskyScript.Tests
             var output = Run(events);
             output.SpaceBucks.Should().Be(1);
         }
+
+        [TestMethod]
+        public void FirstWithCount()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 2) };
+
+            var output = Run(events);
+            output.SpaceBucks.Should().Be(2);
+        }
+
         [TestMethod]
         public void MultipleSame()
         {

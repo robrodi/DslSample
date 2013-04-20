@@ -47,11 +47,13 @@ namespace HeskyScript
             var cookies = Expression.Variable(typeof(int), "cookies");
             var widgets = Expression.Variable(typeof(int), "widgets");
             
+            
             var id = uint.Parse(words[3]);
             var ruleValue = Expression.Constant(id);
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
             var log = typeof(Console).GetMethod("WriteLine", new[] { typeof(int) });
-
+            var toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
+            
             var variables = new[] { spaceBucks, cookies, widgets, result };
             BlockExpression block = Expression.Block(
                 variables,
@@ -60,8 +62,9 @@ namespace HeskyScript
                 Expression.Assign(widgets, Expression.Constant(0)),
     
                 // evaluate rules
-                Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")), 
-                    Expression.Assign(spaceBucks, Expression.Add(spaceBucks, Expression.Constant(1)))),
+                Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")),
+                    Expression.Assign(spaceBucks, Expression.Add(spaceBucks, 
+                    Expression.Call(toInt, Expression.PropertyOrField(param, "Count"))))),
                 Expression.Call(log,spaceBucks),
                 Expression.Assign(result, Expression.Call(creator, cookies, spaceBucks, widgets))
             );
