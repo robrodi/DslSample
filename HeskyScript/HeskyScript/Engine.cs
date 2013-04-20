@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HeskyScript
 {
@@ -14,13 +12,16 @@ namespace HeskyScript
 
         public Engine(Mode mode, Variant variant, string rule)
         {
+            Contract.Requires(!string.IsNullOrWhiteSpace(rule));
             _mode = mode;
             _variant = variant;
             _rule = rule;
         }
 
+        [Pure]
         public Output Run(IEnumerable<Event> events)
         {
+            Contract.Requires(events != null);
             return new Output(0, events.Count(), 0);
         }
     }

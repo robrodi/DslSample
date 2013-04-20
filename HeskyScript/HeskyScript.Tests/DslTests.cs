@@ -12,34 +12,33 @@ namespace HeskyScript.Tests
     [TestClass]
     public class DslTests
     {
+        const string simplestRule = "when id is 3 add spacebuck";
+
         [TestMethod]
         public void First()
         {
-            const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1) };
 
-            var output = Run(events, rule);
+            var output = Run(events);
             output.SpaceBucks.Should().Be(1);
         }
         [TestMethod]
         public void MultipleSame()
         {
-            const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1), new Event(3, 1) };
 
-            var output = Run(events, rule);
+            var output = Run(events);
             output.SpaceBucks.Should().Be(2);
         }
         [TestMethod]
         public void Different()
         {
-            const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(4, 1), new Event(3, 1) };
-            var output = Run(events, rule);
+            var output = Run(events);
             output.SpaceBucks.Should().Be(1);
         }
 
-        Output Run(IEnumerable<Event> events, string rule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
+        static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(mode, variant, rule).Run(events);
         }
