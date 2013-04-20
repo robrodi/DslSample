@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeskyScript", "HeskyScript\HeskyScript.csproj", "{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeskyScript.Tests", "HeskyScript.Tests\HeskyScript.Tests.csproj", "{19A4CD15-A073-4BA6-9D32-A2C711217EDA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19A4CD15-A073-4BA6-9D32-A2C711217EDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19A4CD15-A073-4BA6-9D32-A2C711217EDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19A4CD15-A073-4BA6-9D32-A2C711217EDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19A4CD15-A073-4BA6-9D32-A2C711217EDA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
