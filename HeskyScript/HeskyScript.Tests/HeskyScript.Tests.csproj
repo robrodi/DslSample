@@ -94,6 +94,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Crap.cs" />
+    <Compile Include="DslTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
