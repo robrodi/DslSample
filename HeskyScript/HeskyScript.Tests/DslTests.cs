@@ -12,14 +12,13 @@ namespace HeskyScript.Tests
     [TestClass]
     public class DslTests
     {
-        
         [TestMethod]
         public void First()
         {
             const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1) };
 
-            var output = new Engine().Run(events, rule);
+            var output = Run(events, rule);
             output.SpaceBucks.Should().Be(1);
         }
         [TestMethod]
@@ -28,7 +27,7 @@ namespace HeskyScript.Tests
             const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1), new Event(3, 1) };
 
-            var output = new Engine().Run(events, rule);
+            var output = Run(events, rule);
             output.SpaceBucks.Should().Be(2);
         }
         [TestMethod]
@@ -36,9 +35,13 @@ namespace HeskyScript.Tests
         {
             const string rule = "when mode is charlie\r\n\twhen id is 3 add spacebuck";
             IEnumerable<Event> events = new[] { new Event(4, 1), new Event(3, 1) };
-
-            var output = new Engine().Run(events, rule);
+            var output = Run(events, rule);
             output.SpaceBucks.Should().Be(1);
+        }
+
+        Output Run(IEnumerable<Event> events, string rule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
+        {
+            return new Engine(mode, variant, rule).Run(events);
         }
     }
 }
