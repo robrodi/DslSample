@@ -38,9 +38,22 @@ namespace HeskyScript
             _widgets = widgets;
         }
 
+        public static Output Create(int cookies, int spaceBucks, int widgets)
+        {
+            var result = new Output(cookies, spaceBucks, widgets);
+            Console.WriteLine(result);
+            return result;
+        }
+
         public override string ToString()
         {
             return string.Format("{0} cookies. {1} spacebucks. {2} widgets.", this._cookies, this._spaceBucks, this._widgets);
+        }
+
+        [Pure]
+        public static Output Add(Output l, Output r)
+        {
+            return new Output(l.Cookies + r.Cookies, l.SpaceBucks + r.SpaceBucks, l.Widgets + r.SpaceBucks);
         }
     }
 
@@ -60,3 +73,4 @@ namespace HeskyScript
         }
     }
 }
+

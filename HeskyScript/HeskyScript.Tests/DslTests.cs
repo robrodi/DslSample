@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 
 namespace HeskyScript.Tests
@@ -13,6 +11,14 @@ namespace HeskyScript.Tests
     public class DslTests
     {
         const string simplestRule = "when id is 3 add spacebuck";
+
+        [TestMethod]
+        public void Compile1()
+        {
+            var wrapper = new Engine.TestWrapper(new Engine(Mode.Alpha, Variant.Echo, simplestRule));
+            var result = wrapper.Compile();
+            result.Should().NotBeNull();
+        }
 
         [TestMethod]
         public void First()
