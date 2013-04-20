@@ -12,7 +12,7 @@ namespace HeskyScript.Tests
     public class Crap
     {
         [TestMethod]
-        public void Contracts()
+        public void EventContract()
         {
             try
             {
