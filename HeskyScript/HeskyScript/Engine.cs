@@ -36,37 +36,39 @@ namespace HeskyScript
             Contract.Requires(!string.IsNullOrWhiteSpace(rules));
 
             var words = rules.Split(new[]{' '}, System.StringSplitOptions.RemoveEmptyEntries);
-            Contract.Assert(words.Length > 4);
+            Contract.Assert(words.Length >= 6);
 
             // input param
             ParameterExpression param = Expression.Parameter(typeof(Event), "event");
             // result
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
-            var spaceBucks = Expression.Variable(typeof(int), "spacebucks");
-            var cookies = Expression.Variable(typeof(int), "cookies");
-            var widgets = Expression.Variable(typeof(int), "widgets");
+
+            var types = typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
             
             
             var id = uint.Parse(words[3]);
             var ruleValue = Expression.Constant(id);
+            var ruleFieldName = words[5].ToLower();
+            ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
+
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
             var log = typeof(Console).GetMethod("WriteLine", new[] { typeof(int) });
             var toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
-            
-            var variables = new[] { spaceBucks, cookies, widgets, result };
+
+            var variables = types.Values.Concat(new[] { result });
+            List<Expression> expressions = new List<Expression>();
+            expressions.AddRange(types.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
+
+
+            Expression valueToUpdate = types[ruleFieldName.ToLower()]; // get e from types based on words[5]
+            var updateCount = Expression.Assign(valueToUpdate, 
+                                                Expression.Add(valueToUpdate, Expression.Call(toInt, Expression.PropertyOrField(param, "Count"))));
+            expressions.Add(Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")), updateCount));
+            expressions.Add(Expression.Assign(result, Expression.Call(creator, types.Values)));
             BlockExpression block = Expression.Block(
                 variables,
-                Expression.Assign(spaceBucks, Expression.Constant(0)),
-                Expression.Assign(cookies, Expression.Constant(0)),
-                Expression.Assign(widgets, Expression.Constant(0)),
-    
-                // evaluate rules
-                Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")),
-                    Expression.Assign(spaceBucks, Expression.Add(spaceBucks, 
-                    Expression.Call(toInt, Expression.PropertyOrField(param, "Count"))))),
-                Expression.Call(log,spaceBucks),
-                Expression.Assign(result, Expression.Call(creator, cookies, spaceBucks, widgets))
+                expressions
             );
 
             return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
