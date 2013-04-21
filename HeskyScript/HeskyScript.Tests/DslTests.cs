@@ -176,17 +176,19 @@ namespace HeskyScript.Tests
 
         }
 
-        [TestMethod, Ignore]
+        [TestMethod]
         public void GlobalValue()
         {
-            const string compoundRule = "when mode is Charlie add spacebuck";
+            const string compoundRule = "when mode is Charlie add 1 spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
-            Assert.Fail("NYI");    
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(1);
         }
 
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
-            return new Engine(rule).Run(events);
+            var input = new Input(mode, variant);
+            return new Engine(rule).Run(events, input);
         }
     }
 }

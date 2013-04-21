@@ -25,7 +25,7 @@ namespace HeskyScript
         }
 
         [Pure]
-        public Output Run(IEnumerable<Event> events)
+        public Output Run(IEnumerable<Event> events, Input input)
         {
             Contract.Requires(events != null);
             return events.Select(_runner).Aggregate(Output.Add);

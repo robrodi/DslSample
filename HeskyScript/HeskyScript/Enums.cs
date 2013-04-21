@@ -93,6 +93,17 @@ namespace HeskyScript
         }
     }
 
+    public struct Input
+    {
+        public readonly Mode Mode;
+        public readonly Variant Variant;
+        public Input(Mode mode, Variant variant)
+        {
+            Mode = mode;
+            Variant = variant;
+        }
+    }
+
     public struct Event
     {
         private readonly uint _id;
