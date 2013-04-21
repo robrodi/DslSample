@@ -88,15 +88,16 @@ namespace HeskyScript
                 Contract.Assert(words.Length >= 7, "if specifying the number of rewards, you must have 7 tokens");
                 rewardApplied = words[slot++];
             }
+
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
-            if (!types.ContainsKey(rewardApplied.ToLower())) throw new ArgumentException("Cannot find key: " + rewardApplied);
 
             var comparedTo = Expression.PropertyOrField(eventParameter, c.ToString());
             var x = GetConditionExpression(condition, comparedTo, ruleValue);
 
             // Operation
-            var updateCount = GetOperationToUpdateCount(operation, types[rewardApplied], eventParameter, count);
+            if (!types.ContainsKey(rewardApplied.ToLower())) throw new ArgumentException("Cannot find key: " + rewardApplied);
+            var updateCount = GetOperationToUpdateCount(operation, types[rewardApplied.ToLower()], eventParameter, count);
 
             return Expression.IfThen(x, updateCount);
         }
