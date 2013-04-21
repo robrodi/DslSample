@@ -14,6 +14,11 @@ namespace HeskyScript
     {
         static Logger log = LogManager.GetCurrentClassLogger();
 
+        #region helpers
+        private static readonly MethodInfo toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
+
+        #endregion
+
         [Pure]
         internal Runner Compile(string rules)
         {
@@ -55,37 +60,43 @@ namespace HeskyScript
         private static ConditionalExpression ProcessLine(Dictionary<string, ParameterExpression> types, ParameterExpression eventParameter, string line)
         {
             log.Debug("line: {0}", line);
-
+            int slot = 0;
             var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             Contract.Assert(words.Length >= 6);
 
             // When
-            Contract.Assert(words[0].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
+            Contract.Assert(words[slot++].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
 
             // Criteria
-            EventCriteria c = Parse<EventCriteria>(words[1]);
+            EventCriteria c = Parse<EventCriteria>(words[slot++]);
 
             // Condition
-            Condition condition = Parse<Condition>(words[2]);
+            Condition condition = Parse<Condition>(words[slot++]);
 
             // value
-            var value = words[3];
-            var id = uint.Parse(words[3]);
+            var id = uint.Parse(words[slot++]);
             var ruleValue = Expression.Constant(id);
 
-            var ruleFieldName = words[5].ToLower();
+            // operation
+            Operation operation = Parse<Operation>(words[slot++]);
 
-            ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
-            log.Debug("RFN: {2} Op: {1} Rule Value: {0} ", id, c, ruleFieldName);
+            var rewardApplied = words[slot++];
 
-            if (!types.ContainsKey(ruleFieldName.ToLower())) throw new ArgumentException("Cannot find key: " + ruleFieldName);
+            int count = int.MinValue;
+            if (int.TryParse(rewardApplied, out count))
+            {
+                Contract.Assert(words.Length >= 7, "if specifying the number of rewards, you must have 7 tokens");
+                rewardApplied = words[slot++];
+            }
+            rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
+
+            if (!types.ContainsKey(rewardApplied.ToLower())) throw new ArgumentException("Cannot find key: " + rewardApplied);
 
             var comparedTo = Expression.PropertyOrField(eventParameter, c.ToString());
             var x = GetConditionExpression(condition, comparedTo, ruleValue);
 
             // Operation
-            Operation operation = Parse<Operation>(words[4]);
-            var updateCount = GetOperationToUpdateCount(operation, types[ruleFieldName], eventParameter);
+            var updateCount = GetOperationToUpdateCount(operation, types[rewardApplied], eventParameter, count);
 
             return Expression.IfThen(x, updateCount);
         }
@@ -134,16 +145,23 @@ namespace HeskyScript
 
 
         [Pure]
-        private static BinaryExpression GetOperationToUpdateCount(Operation op, Expression counter, ParameterExpression eventParam)
+        private static BinaryExpression GetOperationToUpdateCount(Operation op, Expression counter, ParameterExpression eventParam, int count)
         {
-            var toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
+
+
             Func<Expression, Expression, BinaryExpression> operation = op ==
                 Operation.Add ?
                     (Func<Expression, Expression, BinaryExpression>)Expression.Add :
                     (Func<Expression, Expression, BinaryExpression>)Expression.Subtract;
-            var addition = operation(counter, Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")));
+            var useEventCount = (count == 0 || count == int.MinValue);
+            log.Debug("Using count? : {0}.  count: {1}", useEventCount, count);
+            Expression ammountToAdd = useEventCount ?
+                (Expression)Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")) :
+                (Expression)Expression.Constant(count);
+            var addition = operation(counter, ammountToAdd);
             return Expression.Assign(counter, addition);
         }
+
     }
 
     public class Engine
