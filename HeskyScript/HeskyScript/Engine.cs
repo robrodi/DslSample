@@ -72,27 +72,6 @@ namespace HeskyScript
             );
 
             return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
-
-            //var spacebucks = 0;
-
-            //// build a method for a single event that returns the sum output
-            //if (words[0].Equals("when", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // support only id
-            //    // support only is
-            //    var id = int.Parse(words[3]);
-
-            //    // if event id = value
-            //    Expression<Func<Event, bool>> idEquals = e => e.Id == id;
-
-            //    // then do something
-            //    // support only add
-                
-            //    // support only spacebuck
-            //}
-
-
-            
         }
 
         [Pure]
