@@ -7,6 +7,18 @@ using System.Threading.Tasks;
 
 namespace HeskyScript
 {
+    public enum Keywords
+    {
+        When,
+        Is,
+        And,
+        Or
+    }
+    public enum Operation
+    {
+        Add,
+        Subtract
+    }
     public enum Mode
     {
         Alpha = 1,

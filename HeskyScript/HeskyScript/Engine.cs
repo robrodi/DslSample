@@ -45,31 +45,14 @@ namespace HeskyScript
             // result
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
-            var toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
             var variables = types.Values.Concat(new[] { result });
             List<Expression> expressions = new List<Expression>();
             expressions.AddRange(types.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
-            foreach (var key in types.Keys) l.Trace("Key: {0}", key);
-
+            
             foreach (var line in lines)
             {
-                l.Debug("line: {0}", line);
-
-                var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                Contract.Assert(words.Length >= 6);
-                var id = uint.Parse(words[3]);
-                var ruleValue = Expression.Constant(id);
-                var ruleFieldName = words[5].ToLower();
-
-                ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
-                l.Debug("ID: {0} RFN: {1}", id, ruleFieldName);
-
-                if (!types.ContainsKey(ruleFieldName.ToLower())) throw new ArgumentException("Cannot find key: " + ruleFieldName);
-
-
-                Expression valueToUpdate = types[ruleFieldName]; // get e from types based on words[5]
-                var updateCount = Expression.Assign(valueToUpdate, Expression.Add(valueToUpdate, Expression.Call(toInt, Expression.PropertyOrField(param, "Count"))));
-                expressions.Add(Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")), updateCount));
+                var operation = ProcessLine(types, param, line);
+                expressions.Add(operation);
             }
 
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
@@ -80,6 +63,37 @@ namespace HeskyScript
             );
 
             return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
+        }
+
+        private static ConditionalExpression ProcessLine(Dictionary<string, ParameterExpression> types, ParameterExpression eventParameter, string line)
+        {
+            l.Debug("line: {0}", line);
+
+            var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            Contract.Assert(words.Length >= 6);
+            var id = uint.Parse(words[3]);
+            var ruleValue = Expression.Constant(id);
+            var ruleFieldName = words[5].ToLower();
+
+            ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
+            l.Debug("ID: {0} RFN: {1}", id, ruleFieldName);
+
+            if (!types.ContainsKey(ruleFieldName.ToLower())) throw new ArgumentException("Cannot find key: " + ruleFieldName);
+
+            var updateCount = GetOperationToUpdateCount(Operation.Add, types[ruleFieldName], eventParameter);
+            var operation = Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(eventParameter, "id")), updateCount);
+            return operation;
+        }
+
+        private static BinaryExpression GetOperationToUpdateCount(Operation op, Expression counter, ParameterExpression eventParam)
+        {
+            var toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
+            Func<Expression, Expression, BinaryExpression> operation = op == 
+                Operation.Add ? 
+                    (Func<Expression, Expression, BinaryExpression>)Expression.Add : 
+                    (Func<Expression, Expression, BinaryExpression>)Expression.Subtract;
+            var addition = operation(counter, Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")));
+            return Expression.Assign(counter, addition);
         }
 
         [Pure]

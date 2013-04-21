@@ -30,6 +30,15 @@ namespace HeskyScript.Tests
         }
 
         [TestMethod]
+        public void First_NCookies()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+
+            var output = Run(events, "when id is 3 add 3 spacebucks");
+            output.SpaceBucks.Should().Be(3);
+        }
+
+        [TestMethod]
         public void First_Cookie()
         {
             IEnumerable<Event> events = new[] { new Event(3, 1) };
@@ -46,6 +55,7 @@ namespace HeskyScript.Tests
             var output = Run(events, "when id is 3 add widget");
             output.Widgets.Should().Be(1);
         }
+
 
         [TestMethod]
         public void FirstWithCount()
@@ -101,7 +111,7 @@ namespace HeskyScript.Tests
             output.Cookies.Should().Be(1);
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public void CompoundRules1()
         {
             IEnumerable<Event> events = new[] { new Event(3, 1) };
