@@ -120,6 +120,15 @@ namespace HeskyScript.Tests
             output.SpaceBucks.Should().Be(1);
         }
 
+        [TestMethod]
+        public void GreaterThan()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5,1) };
+            const string compoundRule = "when id GreaterThan 3 add spacebuck";
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(1);
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(rule).Run(events);

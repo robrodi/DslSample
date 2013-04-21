@@ -12,13 +12,13 @@ namespace HeskyScript
 {
     internal class Compiler
     {
-        static Logger l = LogManager.GetCurrentClassLogger();
+        static Logger log = LogManager.GetCurrentClassLogger();
 
         [Pure]
         internal Runner Compile(string rules)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rules));
-            l.Trace("Rules: {0}", rules);
+            log.Trace("Rules: {0}", rules);
             var lines = rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
             var types = typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
@@ -51,30 +51,86 @@ namespace HeskyScript
         [Pure]
         private static ConditionalExpression ProcessLine(Dictionary<string, ParameterExpression> types, ParameterExpression eventParameter, string line)
         {
-            l.Debug("line: {0}", line);
+            log.Debug("line: {0}", line);
 
             var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             Contract.Assert(words.Length >= 6);
+
+            // When
             Contract.Assert(words[0].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
 
-            // Parse criteria
-            Criteria c;
-            Contract.Assert(Enum.TryParse<Criteria>(words[1], true, out c), string.Format("criteria missing.  Found {0}", words[1]));
+            // Criteria
+            EventCriteria c = Parse<EventCriteria>(words[1]);
 
+            // Condition
+            Condition condition = Parse<Condition>(words[2]);
+
+            // value
+            var value = words[3];
             var id = uint.Parse(words[3]);
             var ruleValue = Expression.Constant(id);
+
+
+
             var ruleFieldName = words[5].ToLower();
 
             ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
-            l.Debug("ID: {0} RFN: {1}", id, ruleFieldName);
+            log.Debug("RFN: {2} Op: {1} Rule Value: {0} ", id, c, ruleFieldName);
 
             if (!types.ContainsKey(ruleFieldName.ToLower())) throw new ArgumentException("Cannot find key: " + ruleFieldName);
 
+
+
+
             var updateCount = GetOperationToUpdateCount(Operation.Add, types[ruleFieldName], eventParameter);
             var comparedTo = Expression.PropertyOrField(eventParameter, c.ToString());
-            var operation = Expression.IfThen(Expression.Equal(ruleValue, comparedTo), updateCount);
+            var x = GetConditionExpression(condition, comparedTo, ruleValue);
+            var operation = Expression.IfThen(x, updateCount);
             return operation;
         }
+
+        [Pure]
+        private static TEnum Parse<TEnum>(string word) where TEnum : struct
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(word));
+            TEnum value;
+            Contract.Assert(Enum.TryParse(word, true, out value), string.Format("{0} missing.  Found {1}", typeof(TEnum).Name, word));
+            return value;
+        }
+
+        private static Expression GetConditionExpression(Condition c, Expression l, ConstantExpression r)
+        {
+            Func<Expression, Expression, Expression> comparer;
+            switch (c)
+            {
+                case Condition.Is:
+                    log.Debug("Equal");
+                    comparer = Expression.Equal;
+                    break;
+                case Condition.NotEqual:
+                    log.Debug("NotEqual");
+                    comparer = Expression.NotEqual;
+                    break;
+                case Condition.Greater:
+                case Condition.GreaterThan:
+                case Condition.gt:
+                    log.Debug("GreaterThan");
+                    comparer = Expression.GreaterThan;
+                    break;
+                case Condition.Less:
+                case Condition.LessThan:
+                case Condition.lt:
+                    log.Debug("LessThan");
+                    comparer = Expression.LessThan;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
+            }
+
+            return comparer(l, r);
+        }
+
+
 
         [Pure]
         private static BinaryExpression GetOperationToUpdateCount(Operation op, Expression counter, ParameterExpression eventParam)
@@ -92,8 +148,6 @@ namespace HeskyScript
     public class Engine
     {
         static Logger l = LogManager.GetCurrentClassLogger();
-        //readonly Mode _mode;
-        //readonly Variant _variant;
         readonly string _rule;
         readonly Runner _runner;
 
@@ -109,15 +163,6 @@ namespace HeskyScript
         {
             Contract.Requires(events != null);
             return events.Select(_runner).Aggregate(Output.Add);
-        }
-
-        [Pure]
-        private static Output sample(Event e)
-        {
-            int spacebucks = 0;
-            if (e.Id == 3)
-                spacebucks++;
-            return new Output(spaceBucks: spacebucks);
         }
 
         public class TestWrapper

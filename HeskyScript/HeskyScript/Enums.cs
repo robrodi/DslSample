@@ -16,12 +16,24 @@ namespace HeskyScript
 
     public enum Condition
     {
-        Is
+        Is,
+        NotEqual,
+        Greater,
+        GreaterThan,
+        gt,
+        Less,
+        LessThan,
+        lt
     }
 
-    public enum Criteria
+    public enum EventCriteria
     {
         Id,
+        Count
+    }
+
+    public enum GlobalCriteria
+    {
         Mode,
         Variant
     }
