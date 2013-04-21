@@ -11,22 +11,35 @@ using Runner = System.Func<HeskyScript.Event, HeskyScript.Output>;
 
 namespace HeskyScript
 {
+    /// <summary>
+    /// Compiles the rules.
+    /// </summary>
     internal class Compiler
     {
-        static Logger log = LogManager.GetCurrentClassLogger();
+        // nlog logger.
+        private static Logger log = LogManager.GetCurrentClassLogger();
+
+        // logger for the running class.
+        [Obsolete("not yet used")]
         static Logger runningLogger = LogManager.GetLogger("running");
 
         #region helpers
         private static readonly MethodInfo toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
-        private static readonly IDictionary<string, ParameterExpression> types = GetOutputTypes();
+        private static IDictionary<string, ParameterExpression> _types;
+        [Obsolete("not yet used")]
+        private static readonly MethodInfo debug = typeof(Logger).GetMethod("Trace", new[] { typeof(string), typeof(object[])});
         #endregion
 
+        /// <summary>
+        /// Compiles the string rule into an expression tree for generating rewards from an event.
+        /// </summary>
+        /// <param name="rules"></param>
+        /// <returns></returns>
         [Pure]
         internal Runner Compile(string rules)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rules));
             log.Trace("Rules: {0}", rules);
-
             // input param
             ParameterExpression param = Expression.Parameter(typeof(Event), "event");
             Contract.Assert(param != null);
@@ -35,7 +48,7 @@ namespace HeskyScript
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
             List<Expression> expressions = new List<Expression>();
-            expressions.AddRange(types.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
+            expressions.AddRange(OutputTypes.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
 
             foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -44,19 +57,24 @@ namespace HeskyScript
             }
 
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
-            expressions.Add(Expression.Assign(result, Expression.Call(creator, types.Values)));
+            expressions.Add(Expression.Assign(result, Expression.Call(creator, OutputTypes.Values)));
             BlockExpression block = Expression.Block(
-                types.Values.Concat(new[] { result }),
+                OutputTypes.Values.Concat(new[] { result }),
                 expressions
             );
 
             return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
         }
 
-        private static Dictionary<string, ParameterExpression> GetOutputTypes()
+        private static IDictionary<string, ParameterExpression> OutputTypes
         {
-            return typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
+            get
+            {
+                if (_types != null) return _types;
+
+                return _types = typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
+            }
         }
 
         [Pure]
@@ -152,8 +170,8 @@ namespace HeskyScript
         private static BinaryExpression GetOperationToUpdateCount(Operation op, ParameterExpression eventParam, int count, string rewardToApply)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rewardToApply), "Invalid reward");
-            if (!types.ContainsKey(rewardToApply.ToLower())) throw new ArgumentException("Cannot find key: " + rewardToApply);
-            var counter = types[rewardToApply.ToLower()];
+            if (!OutputTypes.ContainsKey(rewardToApply.ToLower())) throw new ArgumentException("Cannot find key: " + rewardToApply);
+            var counter = OutputTypes[rewardToApply.ToLower()];
 
             Func<Expression, Expression, BinaryExpression> operation = op ==
                 Operation.Add ?
@@ -166,8 +184,19 @@ namespace HeskyScript
                 (Expression)Expression.Constant(count);
 
             log.Info("{0} {1} {2}", op, useEventCount ? "eventCount" : count.ToString(), rewardToApply);
+            
             var addition = operation(counter, ammountToAdd);
             return Expression.Assign(counter, addition);
+        }
+
+        [Obsolete("not yet used")]
+        static Expression Debug2(string format, params Expression[] parameters)
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(format), "bad log");
+
+            Expression[] paramList = new[] { Expression.Constant(format) };
+            var expressions = parameters != null && parameters.Length>0 ? paramList.Concat(parameters) : paramList;
+            return Expression.Call(typeof(Logger), "Debug", new[] { typeof(string), typeof(object[]) }, expressions.ToArray());
         }
 
     }
