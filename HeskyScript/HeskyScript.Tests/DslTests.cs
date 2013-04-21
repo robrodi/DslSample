@@ -39,6 +39,15 @@ namespace HeskyScript.Tests
         }
 
         [TestMethod]
+        public void First_Widget()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+
+            var output = Run(events, "when id is 3 add widget");
+            output.Widgets.Should().Be(1);
+        }
+
+        [TestMethod]
         public void FirstWithCount()
         {
             IEnumerable<Event> events = new[] { new Event(3, 2) };
