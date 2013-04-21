@@ -30,6 +30,15 @@ namespace HeskyScript.Tests
         }
 
         [TestMethod]
+        public void Subtract()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+
+            var output = Run(events, simplestRule.Replace("add", "subtract"));
+            output.SpaceBucks.Should().Be(-1);
+        }
+
+        [TestMethod]
         public void First_NCookies()
         {
             IEnumerable<Event> events = new[] { new Event(3, 1) };

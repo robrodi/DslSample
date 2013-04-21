@@ -73,8 +73,6 @@ namespace HeskyScript
             var id = uint.Parse(words[3]);
             var ruleValue = Expression.Constant(id);
 
-
-
             var ruleFieldName = words[5].ToLower();
 
             ruleFieldName = ruleFieldName.EndsWith("s") ? ruleFieldName : ruleFieldName + "s";
@@ -82,14 +80,14 @@ namespace HeskyScript
 
             if (!types.ContainsKey(ruleFieldName.ToLower())) throw new ArgumentException("Cannot find key: " + ruleFieldName);
 
-
-
-
-            var updateCount = GetOperationToUpdateCount(Operation.Add, types[ruleFieldName], eventParameter);
             var comparedTo = Expression.PropertyOrField(eventParameter, c.ToString());
             var x = GetConditionExpression(condition, comparedTo, ruleValue);
-            var operation = Expression.IfThen(x, updateCount);
-            return operation;
+
+            // Operation
+            Operation operation = Parse<Operation>(words[4]);
+            var updateCount = GetOperationToUpdateCount(operation, types[ruleFieldName], eventParameter);
+
+            return Expression.IfThen(x, updateCount);
         }
 
         [Pure]
