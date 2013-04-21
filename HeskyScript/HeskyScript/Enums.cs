@@ -10,10 +10,22 @@ namespace HeskyScript
     public enum Keywords
     {
         When,
-        Is,
         And,
         Or
     }
+
+    public enum Condition
+    {
+        Is
+    }
+
+    public enum Criteria
+    {
+        Id,
+        Mode,
+        Variant
+    }
+
     public enum Operation
     {
         Add,

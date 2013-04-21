@@ -15,7 +15,7 @@ namespace HeskyScript.Tests
         [TestMethod]
         public void Compile1()
         {
-            var wrapper = new Engine.TestWrapper(new Engine(Mode.Alpha, Variant.Echo, simplestRule));
+            var wrapper = new Engine.TestWrapper(new Engine(simplestRule));
             var result = wrapper.Compile();
             result.Should().NotBeNull();
         }
@@ -122,7 +122,7 @@ namespace HeskyScript.Tests
 
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
-            return new Engine(mode, variant, rule).Run(events);
+            return new Engine(rule).Run(events);
         }
     }
 }
