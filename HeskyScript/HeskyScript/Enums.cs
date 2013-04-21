@@ -28,14 +28,16 @@ namespace HeskyScript
 
     public enum EventCriteria
     {
+        None,
         Id,
         Count
     }
 
     public enum GlobalCriteria
     {
+        None,
         Mode,
-        Variant
+        Variant,
     }
 
     public enum Operation

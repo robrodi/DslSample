@@ -79,17 +79,43 @@ namespace HeskyScript
 
         struct TestExpressionInfo
         {
-            public  readonly EventCriteria Criteria;
+            public readonly EventCriteria EventCriteria;
+            public readonly GlobalCriteria GlobalCriteria;
             public  readonly Condition Condition;
             private readonly object _value;
             public  Expression Value { get { return Expression.Constant(_value); } }
 
-            public TestExpressionInfo(EventCriteria criteria, Condition condition, object value)
+            public TestExpressionInfo(EventCriteria criteria, Condition condition, object value) : 
+                this(criteria, GlobalCriteria.None, condition, value)
+            {
+            }
+            public TestExpressionInfo(GlobalCriteria criteria, Condition condition, object value) :
+                this(EventCriteria.None, criteria, condition, value)
+            {
+            }
+            private TestExpressionInfo(EventCriteria eventCriteria, GlobalCriteria globalCriteria, Condition condition, object value) 
             {
                 Contract.Requires(value != null);
-                Criteria = criteria;
+                Contract.Requires(eventCriteria != HeskyScript.EventCriteria.None || globalCriteria != HeskyScript.GlobalCriteria.None);
+                Contract.Requires(eventCriteria == HeskyScript.EventCriteria.None || globalCriteria == HeskyScript.GlobalCriteria.None);
+
+                EventCriteria = eventCriteria;
+                GlobalCriteria = globalCriteria;
                 Condition = condition;
                 _value = value;
+            }
+            internal static TestExpressionInfo Parse(string critiera, Condition condition, object value)
+            {
+                Contract.Requires(!string.IsNullOrWhiteSpace(critiera));
+                Contract.Requires(value != null);
+
+                var g = TryParse<GlobalCriteria>(critiera);
+                var e = TryParse<EventCriteria>(critiera);
+
+                return new TestExpressionInfo(e.HasValue ? e.Value : EventCriteria.None, 
+                                                g.HasValue ? g.Value : GlobalCriteria.None, 
+                                                condition, 
+                                                value);
             }
         }
 
@@ -120,8 +146,8 @@ namespace HeskyScript
             {
                 Contract.Assert(words.Length > slot + 3);
                 if (!firstCondition) slot++;
-                    firstCondition = false;
-                condition = new TestExpressionInfo(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
+                firstCondition = false;
+                condition = TestExpressionInfo.Parse(words[slot++], Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
                 var conditionalExpression = GetConditionExpression(condition, eventParameter);
                 criteria = BinaryExpression.And(criteria, conditionalExpression);
             }
@@ -134,13 +160,13 @@ namespace HeskyScript
             int count;
             if (int.TryParse(rewardApplied, out count))
             {
-                Contract.Assert(words.Length >= 7, "if specifying the number of rewards, you must have 7 tokens");
+                Contract.Assert(words.Length >= slot + 1, "if specifying the number of rewards, you must have 7 tokens");
                 Contract.Assert(count != 0, "you must not specify 0 count");
                 rewardApplied = words[slot++];
             }
 
 
-            log.Info("when {0} {1} {2}", condition.Criteria, condition, condition.Value);
+            log.Info("when {0} {1} {2}", condition.EventCriteria, condition, condition.Value);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
 
@@ -149,6 +175,15 @@ namespace HeskyScript
             return Expression.IfThen(criteria, updateCount);
         }
 
+        [Pure]
+        private static TEnum? TryParse<TEnum>(string word) where TEnum : struct
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(word));
+            TEnum value;
+            var success = Enum.TryParse(word, true, out value);
+            log.Debug("TryParse: {0} success? {1}.  Input: <{2}>", typeof(TEnum).Name, success, word);
+            return success ? value : (TEnum?)null;
+        }
         [Pure]
         private static TEnum Parse<TEnum>(string word) where TEnum : struct
         {
@@ -187,7 +222,7 @@ namespace HeskyScript
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
             }
 
-            return comparer(Expression.PropertyOrField(eventParameter, c.Criteria.ToString()), c.Value);
+            return comparer(Expression.PropertyOrField(eventParameter, c.EventCriteria.ToString()), c.Value);
         }
 
         [Pure]
