@@ -149,6 +149,23 @@ namespace HeskyScript.Tests
             output.SpaceBucks.Should().Be(1);
         }
 
+        [TestMethod]
+        public void MultipleCriteria()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+
+            var output = Run(events, "when id is 3 and count is 1 add cookie");
+            output.Cookies.Should().Be(0);
+        }
+
+        [TestMethod, Ignore]
+        public void GlobalValue()
+        {
+            const string compoundRule = "when mode is Charlie add spacebuck";
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
+            Assert.Fail("NYI");    
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(rule).Run(events);

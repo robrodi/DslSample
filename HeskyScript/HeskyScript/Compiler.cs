@@ -77,6 +77,22 @@ namespace HeskyScript
             }
         }
 
+        struct Hrm
+        {
+            public  readonly EventCriteria Criteria;
+            public  readonly Condition Condition;
+            private readonly object _value;
+            public  Expression Value { get { return Expression.Constant(_value); } }
+
+            public Hrm(EventCriteria criteria, Condition condition, object value)
+            {
+                Contract.Requires(value != null);
+                Criteria = criteria;
+                Condition = condition;
+                _value = value;
+            }
+        }
+
         [Pure]
         private static ConditionalExpression ProcessLine(ParameterExpression eventParameter, string line)
         {
@@ -92,14 +108,9 @@ namespace HeskyScript
             Contract.Assert(words[slot++].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
 
             // Criteria
-            EventCriteria c = Parse<EventCriteria>(words[slot++]);
+            var condition = new Hrm(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
 
-            // Condition
-            Condition condition = Parse<Condition>(words[slot++]);
-
-            // value
-            var id = uint.Parse(words[slot++]);
-            var ruleValue = Expression.Constant(id);
+            // split point
 
             // operation
             Operation operation = Parse<Operation>(words[slot++]);
@@ -115,10 +126,10 @@ namespace HeskyScript
             }
 
 
-            log.Info("when {0} {1} {2}", c, condition, id);
+            log.Info("when {0} {1} {2}", condition.Criteria, condition, condition.Value);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
-            var conditionalExpression = GetConditionExpression(condition, Expression.PropertyOrField(eventParameter, c.ToString()), ruleValue);
+            var conditionalExpression = GetConditionExpression(condition, Expression.PropertyOrField(eventParameter, condition.Criteria.ToString()));
 
             // Operation
             var updateCount = GetOperationToUpdateCount(operation, eventParameter, count, rewardApplied);
@@ -134,10 +145,10 @@ namespace HeskyScript
             return value;
         }
 
-        private static Expression GetConditionExpression(Condition c, Expression l, ConstantExpression r)
+        private static Expression GetConditionExpression(Hrm c, Expression eventField)
         {
             Func<Expression, Expression, Expression> comparer;
-            switch (c)
+            switch (c.Condition)
             {
                 case Condition.Is:
                     log.Debug("Equal");
@@ -163,7 +174,7 @@ namespace HeskyScript
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
             }
 
-            return comparer(l, r);
+            return comparer(eventField, c.Value);
         }
 
         [Pure]
