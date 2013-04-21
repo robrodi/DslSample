@@ -141,6 +141,15 @@ namespace HeskyScript.Tests
         }
 
         [TestMethod]
+        public void Sample1()
+        {
+            IEnumerable<Event> events = new[] { new Event(5, 3), new Event(6, 1), new Event(7, 2) };
+            var result = Run(events, sampleRule1);
+            result.Cookies.Should().Be(5, "3 cookies for event number 5 plus 2 cookies for event 6 should be 5 cookies!");
+            result.Widgets.Should().Be(2, "2 widgets for event number 7");
+        }
+
+        [TestMethod]
         public void lt()
         {
             IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };

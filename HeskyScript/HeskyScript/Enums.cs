@@ -89,7 +89,7 @@ namespace HeskyScript
         [Pure]
         public static Output Add(Output l, Output r)
         {
-            return new Output(l.Cookies + r.Cookies, l.SpaceBucks + r.SpaceBucks, l.Widgets + r.SpaceBucks);
+            return new Output(l.Cookies + r.Cookies, l.SpaceBucks + r.SpaceBucks, l.Widgets + r.Widgets);
         }
     }
 

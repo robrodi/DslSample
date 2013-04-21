@@ -13,10 +13,11 @@ namespace HeskyScript
     internal class Compiler
     {
         static Logger log = LogManager.GetCurrentClassLogger();
+        static Logger runningLogger = LogManager.GetLogger("running");
 
         #region helpers
         private static readonly MethodInfo toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
-
+        private static readonly IDictionary<string, ParameterExpression> types = GetOutputTypes();
         #endregion
 
         [Pure]
@@ -27,16 +28,17 @@ namespace HeskyScript
 
             // input param
             ParameterExpression param = Expression.Parameter(typeof(Event), "event");
+            Contract.Assert(param != null);
+
             // result
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
-            var types = GetOutputTypes();
             List<Expression> expressions = new List<Expression>();
             expressions.AddRange(types.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
 
             foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
-                var operation = ProcessLine(types, param, line);
+                var operation = ProcessLine(param, line);
                 expressions.Add(operation);
             }
 
@@ -57,8 +59,11 @@ namespace HeskyScript
         }
 
         [Pure]
-        private static ConditionalExpression ProcessLine(Dictionary<string, ParameterExpression> types, ParameterExpression eventParameter, string line)
+        private static ConditionalExpression ProcessLine(ParameterExpression eventParameter, string line)
         {
+            Contract.Requires(!string.IsNullOrWhiteSpace(line), "Empty line");
+            Contract.Requires(eventParameter != null, "eventParameter is null");
+
             log.Debug("line: {0}", line);
             int slot = 0;
             var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -82,24 +87,23 @@ namespace HeskyScript
 
             var rewardApplied = words[slot++];
 
-            int count = int.MinValue;
+            int count;
             if (int.TryParse(rewardApplied, out count))
             {
                 Contract.Assert(words.Length >= 7, "if specifying the number of rewards, you must have 7 tokens");
+                Contract.Assert(count != 0, "you must not specify 0 count");
                 rewardApplied = words[slot++];
             }
 
+
+            log.Info("when {0} {1} {2}", c, condition, id);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
-
-            var comparedTo = Expression.PropertyOrField(eventParameter, c.ToString());
-            var x = GetConditionExpression(condition, comparedTo, ruleValue);
+            var conditionalExpression = GetConditionExpression(condition, Expression.PropertyOrField(eventParameter, c.ToString()), ruleValue);
 
             // Operation
-            if (!types.ContainsKey(rewardApplied.ToLower())) throw new ArgumentException("Cannot find key: " + rewardApplied);
-            var updateCount = GetOperationToUpdateCount(operation, types[rewardApplied.ToLower()], eventParameter, count);
-
-            return Expression.IfThen(x, updateCount);
+            var updateCount = GetOperationToUpdateCount(operation, eventParameter, count, rewardApplied);
+            return Expression.IfThen(conditionalExpression, updateCount);
         }
 
         [Pure]
@@ -143,22 +147,24 @@ namespace HeskyScript
             return comparer(l, r);
         }
 
-
-
         [Pure]
-        private static BinaryExpression GetOperationToUpdateCount(Operation op, Expression counter, ParameterExpression eventParam, int count)
+        private static BinaryExpression GetOperationToUpdateCount(Operation op, ParameterExpression eventParam, int count, string rewardToApply)
         {
-
+            Contract.Requires(!string.IsNullOrWhiteSpace(rewardToApply), "Invalid reward");
+            if (!types.ContainsKey(rewardToApply.ToLower())) throw new ArgumentException("Cannot find key: " + rewardToApply);
+            var counter = types[rewardToApply.ToLower()];
 
             Func<Expression, Expression, BinaryExpression> operation = op ==
                 Operation.Add ?
                     (Func<Expression, Expression, BinaryExpression>)Expression.Add :
                     (Func<Expression, Expression, BinaryExpression>)Expression.Subtract;
-            var useEventCount = (count == 0 || count == int.MinValue);
-            log.Debug("Using count? : {0}.  count: {1}", useEventCount, count);
+            var useEventCount = (count == 0);
+            log.Debug("Using Event count? : {0}.  count: {1}", useEventCount, count);
             Expression ammountToAdd = useEventCount ?
                 (Expression)Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")) :
                 (Expression)Expression.Constant(count);
+
+            log.Info("{0} {1} {2}", op, useEventCount ? "eventCount" : count.ToString(), rewardToApply);
             var addition = operation(counter, ammountToAdd);
             return Expression.Assign(counter, addition);
         }
