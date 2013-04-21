@@ -63,6 +63,15 @@ namespace HeskyScript.Tests
             output.SpaceBucks.Should().Be(1);
         }
 
+        [TestMethod]
+        public void TwoRules()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+
+            var output = Run(events, simplestRule + Environment.NewLine + simplestRule);
+            output.SpaceBucks.Should().Be(2);
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(mode, variant, rule).Run(events);
