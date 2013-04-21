@@ -122,15 +122,6 @@ namespace HeskyScript.Tests
             output.Cookies.Should().Be(1);
         }
 
-        [TestMethod, Ignore]
-        public void CompoundRules1()
-        {
-            IEnumerable<Event> events = new[] { new Event(3, 1) };
-            const string compoundRule = "when id is 3 and Mode is Charlie add spacebuck";
-            var output = Run(events, compoundRule);
-            output.SpaceBucks.Should().Be(1);
-        }
-
         [TestMethod]
         public void GreaterThan()
         {
