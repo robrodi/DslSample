@@ -152,10 +152,10 @@ namespace HeskyScript.Tests
         [TestMethod]
         public void MultipleCriteria()
         {
-            IEnumerable<Event> events = new[] { new Event(3, 1) };
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(4, 1), new Event(3, 2) };
 
             var output = Run(events, "when id is 3 and count is 1 add cookie");
-            output.Cookies.Should().Be(0);
+            output.Cookies.Should().Be(1);
         }
 
         [TestMethod]
@@ -165,6 +165,15 @@ namespace HeskyScript.Tests
             var output = Run(events, "when add spacebuck");
             output.SpaceBucks.Should().Be(1);
             
+        }
+
+        [TestMethod]
+        public void NoCriteria_NoWhen()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+            var output = Run(events, "add spacebuck");
+            output.SpaceBucks.Should().Be(1);
+
         }
 
         [TestMethod, Ignore]

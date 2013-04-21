@@ -103,23 +103,28 @@ namespace HeskyScript
             Contract.Requires(!string.IsNullOrWhiteSpace(line), "Empty line");
             Contract.Requires(eventParameter != null, "eventParameter is null");
 
-            log.Debug("line: {0}", line);
             int slot = 0;
             var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
+            Contract.Assert(words.Length >= 2);
+
             // When
-            Contract.Assert(words[slot++].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
+            if (words[0].Equals("when", StringComparison.OrdinalIgnoreCase)) slot++;
+
             TestExpressionInfo condition =new  TestExpressionInfo();
 
             Expression criteria = Expression.Constant(true);
 
+            bool firstCondition = true;
             while(!IsOperation(words[slot]))
             {
+                Contract.Assert(words.Length > slot + 3);
+                if (!firstCondition) slot++;
+                    firstCondition = false;
                 condition = new TestExpressionInfo(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
                 var conditionalExpression = GetConditionExpression(condition, eventParameter);
                 criteria = BinaryExpression.And(criteria, conditionalExpression);
             }
-
 
             // operation
             Operation operation = Parse<Operation>(words[slot++]);
