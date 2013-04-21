@@ -92,6 +92,15 @@ namespace HeskyScript.Tests
             output.Cookies.Should().Be(1);
         }
 
+        [TestMethod]
+        public void CompoundRules1()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+            const string compoundRule = "when id is 3 and Mode is Charlie add spacebuck";
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(1);
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(mode, variant, rule).Run(events);
