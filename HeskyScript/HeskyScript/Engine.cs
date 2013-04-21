@@ -70,8 +70,8 @@ namespace HeskyScript
                 Expression valueToUpdate = types[ruleFieldName]; // get e from types based on words[5]
                 var updateCount = Expression.Assign(valueToUpdate, Expression.Add(valueToUpdate, Expression.Call(toInt, Expression.PropertyOrField(param, "Count"))));
                 expressions.Add(Expression.IfThen(Expression.Equal(ruleValue, Expression.PropertyOrField(param, "id")), updateCount));
-
             }
+
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
             expressions.Add(Expression.Assign(result, Expression.Call(creator, types.Values)));
             BlockExpression block = Expression.Block(

@@ -82,6 +82,16 @@ namespace HeskyScript.Tests
             output.Cookies.Should().Be(1);
         }
 
+        [TestMethod]
+        public void TwoRules3()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5,1) };
+
+            var output = Run(events, simplestRule + Environment.NewLine + simplestRule.Replace("spacebuck", "Cookie").Replace('3', '5'));
+            output.SpaceBucks.Should().Be(1);
+            output.Cookies.Should().Be(1);
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(mode, variant, rule).Run(events);
