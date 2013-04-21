@@ -9,7 +9,7 @@ A DSL in the DLR to route events into a couple of buckets.
 
 ## Goals
 
-### Sample 1
+### Sample 1 (done)
     when id is 5 add cookie
     when id is 6 add 2 cookies
     when id is 7 add widget
