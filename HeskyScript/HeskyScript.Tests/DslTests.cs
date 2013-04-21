@@ -158,6 +158,15 @@ namespace HeskyScript.Tests
             output.Cookies.Should().Be(0);
         }
 
+        [TestMethod]
+        public void NoCriteria()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1) };
+            var output = Run(events, "when add spacebuck");
+            output.SpaceBucks.Should().Be(1);
+            
+        }
+
         [TestMethod, Ignore]
         public void GlobalValue()
         {

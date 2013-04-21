@@ -93,6 +93,10 @@ namespace HeskyScript
             }
         }
 
+        private static bool IsOperation(string word)
+        {
+            return !string.IsNullOrWhiteSpace(word) && Enum.GetNames(typeof(Operation)).Any(w => w.Equals(word, StringComparison.OrdinalIgnoreCase));
+        }
         [Pure]
         private static ConditionalExpression ProcessLine(ParameterExpression eventParameter, string line)
         {
@@ -102,15 +106,20 @@ namespace HeskyScript
             log.Debug("line: {0}", line);
             int slot = 0;
             var words = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            Contract.Assert(words.Length >= 6);
 
             // When
             Contract.Assert(words[slot++].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
+            TestExpressionInfo condition =new  TestExpressionInfo();
 
-            // Criteria
-            var condition = new TestExpressionInfo(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
+            Expression criteria = Expression.Constant(true);
 
-            // split point
+            while(!IsOperation(words[slot]))
+            {
+                condition = new TestExpressionInfo(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
+                var conditionalExpression = GetConditionExpression(condition, eventParameter);
+                criteria = BinaryExpression.And(criteria, conditionalExpression);
+            }
+
 
             // operation
             Operation operation = Parse<Operation>(words[slot++]);
@@ -129,11 +138,10 @@ namespace HeskyScript
             log.Info("when {0} {1} {2}", condition.Criteria, condition, condition.Value);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
-            var conditionalExpression = GetConditionExpression(condition, Expression.PropertyOrField(eventParameter, condition.Criteria.ToString()));
 
             // Operation
             var updateCount = GetOperationToUpdateCount(operation, eventParameter, count, rewardApplied);
-            return Expression.IfThen(conditionalExpression, updateCount);
+            return Expression.IfThen(criteria, updateCount);
         }
 
         [Pure]
@@ -141,13 +149,13 @@ namespace HeskyScript
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(word));
             TEnum value;
-            Contract.Assert(Enum.TryParse(word, true, out value), string.Format("{0} missing.  Found {1}", typeof(TEnum).Name, word));
+            Contract.Assert(Enum.TryParse(word, true, out value), string.Format("{0} missing.  Found <{1}>", typeof(TEnum).Name, word));
             return value;
         }
 
-        private static Expression GetConditionExpression(TestExpressionInfo c, Expression eventField)
+        private static BinaryExpression GetConditionExpression(TestExpressionInfo c, Expression eventParameter)
         {
-            Func<Expression, Expression, Expression> comparer;
+            Func<Expression, Expression, BinaryExpression> comparer;
             switch (c.Condition)
             {
                 case Condition.Is:
@@ -174,7 +182,7 @@ namespace HeskyScript
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
             }
 
-            return comparer(eventField, c.Value);
+            return comparer(Expression.PropertyOrField(eventParameter, c.Criteria.ToString()), c.Value);
         }
 
         [Pure]
