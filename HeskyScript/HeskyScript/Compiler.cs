@@ -104,7 +104,7 @@ namespace HeskyScript
                 Condition = condition;
                 _value = value;
             }
-            internal static TestExpressionInfo Parse(string critiera, Condition condition, object value)
+            internal static TestExpressionInfo Parse(string critiera, Condition condition, string value)
             {
                 Contract.Requires(!string.IsNullOrWhiteSpace(critiera));
                 Contract.Requires(value != null);
@@ -112,10 +112,30 @@ namespace HeskyScript
                 var g = TryParse<GlobalCriteria>(critiera);
                 var e = TryParse<EventCriteria>(critiera);
 
+                object val = null;
+                if (e.HasValue)
+                {
+                    val = UInt32.Parse(value);
+                }
+                if (g.HasValue)
+                {
+                    switch (g.Value) 
+                    {
+                        case GlobalCriteria.Mode:
+                            val = Parse<Mode>(value);
+                            break;
+                        case GlobalCriteria.Variant:
+                            val = Parse<Variant>(value);
+                            break;
+                        default: throw new ArgumentOutOfRangeException();
+                    }
+                }
+                
+
                 return new TestExpressionInfo(e.HasValue ? e.Value : EventCriteria.None, 
                                                 g.HasValue ? g.Value : GlobalCriteria.None, 
                                                 condition, 
-                                                value);
+                                                val);
             }
         }
 
@@ -147,7 +167,7 @@ namespace HeskyScript
                 Contract.Assert(words.Length > slot + 3);
                 if (!firstCondition) slot++;
                 firstCondition = false;
-                condition = TestExpressionInfo.Parse(words[slot++], Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
+                condition = TestExpressionInfo.Parse(words[slot++], Parse<Condition>(words[slot++]), words[slot++]);
                 var conditionalExpression = GetConditionExpression(condition, eventParameter);
                 criteria = BinaryExpression.And(criteria, conditionalExpression);
             }
@@ -155,6 +175,7 @@ namespace HeskyScript
             // operation
             Operation operation = Parse<Operation>(words[slot++]);
 
+            Contract.Assert(words.Length > slot);
             var rewardApplied = words[slot++];
 
             int count;
