@@ -19,20 +19,17 @@ namespace HeskyScript
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rules));
             log.Trace("Rules: {0}", rules);
-            var lines = rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-            var types = typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
 
             // input param
             ParameterExpression param = Expression.Parameter(typeof(Event), "event");
             // result
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
-            var variables = types.Values.Concat(new[] { result });
+            var types = GetOutputTypes();
             List<Expression> expressions = new List<Expression>();
             expressions.AddRange(types.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
 
-            foreach (var line in lines)
+            foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
                 var operation = ProcessLine(types, param, line);
                 expressions.Add(operation);
@@ -41,11 +38,17 @@ namespace HeskyScript
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
             expressions.Add(Expression.Assign(result, Expression.Call(creator, types.Values)));
             BlockExpression block = Expression.Block(
-                variables,
+                types.Values.Concat(new[] { result }),
                 expressions
             );
 
             return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
+        }
+
+        private static Dictionary<string, ParameterExpression> GetOutputTypes()
+        {
+            return typeof(Output).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Select(p => p.Name.ToLower()).ToDictionary(e => e, e => Expression.Variable(typeof(int), e));
         }
 
         [Pure]
