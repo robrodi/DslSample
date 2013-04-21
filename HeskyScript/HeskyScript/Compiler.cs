@@ -77,14 +77,14 @@ namespace HeskyScript
             }
         }
 
-        struct Hrm
+        struct TestExpressionInfo
         {
             public  readonly EventCriteria Criteria;
             public  readonly Condition Condition;
             private readonly object _value;
             public  Expression Value { get { return Expression.Constant(_value); } }
 
-            public Hrm(EventCriteria criteria, Condition condition, object value)
+            public TestExpressionInfo(EventCriteria criteria, Condition condition, object value)
             {
                 Contract.Requires(value != null);
                 Criteria = criteria;
@@ -108,7 +108,7 @@ namespace HeskyScript
             Contract.Assert(words[slot++].Equals("when", StringComparison.OrdinalIgnoreCase), "rules should start with when");
 
             // Criteria
-            var condition = new Hrm(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
+            var condition = new TestExpressionInfo(Parse<EventCriteria>(words[slot++]), Parse<Condition>(words[slot++]), uint.Parse(words[slot++]));
 
             // split point
 
@@ -145,7 +145,7 @@ namespace HeskyScript
             return value;
         }
 
-        private static Expression GetConditionExpression(Hrm c, Expression eventField)
+        private static Expression GetConditionExpression(TestExpressionInfo c, Expression eventField)
         {
             Func<Expression, Expression, Expression> comparer;
             switch (c.Condition)
