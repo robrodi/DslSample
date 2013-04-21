@@ -129,6 +129,15 @@ namespace HeskyScript.Tests
             output.SpaceBucks.Should().Be(1);
         }
 
+        [TestMethod]
+        public void lt()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
+            const string compoundRule = "when id lt 4 add spacebuck";
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(1);
+        }
+
         static Output Run(IEnumerable<Event> events, string rule = simplestRule, Mode mode = Mode.Charlie, Variant variant = Variant.Foxtrot)
         {
             return new Engine(rule).Run(events);
