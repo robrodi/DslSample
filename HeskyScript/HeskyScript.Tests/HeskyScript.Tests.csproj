@@ -96,6 +96,7 @@
     <Compile Include="Crap.cs" />
     <Compile Include="DslTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SampleTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HeskyScript\HeskyScript.csproj">
