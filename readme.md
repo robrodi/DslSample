@@ -21,8 +21,19 @@ A DSL in the DLR to route events into a couple of buckets.
 ### Sample 3 (done)
     when mode is Alpha and count GreaterThan 4 add cookie
     when Variant is foxtrot and count is 3 add 2 cookies
-    
-### Sample 4
+
+### Sample 4 (done)
+    when id is 5 add cookie
+    # I'm a comment
+    when id is 7 add widget
+
+    # I'm a comment preceded by a newline!
+    when id is 6 add 2 cookies
+
+    // I'm a comment too.
+    when id is 9 add 2 cookies    
+
+### Sample X
     when mode is charlie and variant is foxtrot
         when id is 3 add 4 spacebucks and 100 cookies
         when id is 5 add cookie

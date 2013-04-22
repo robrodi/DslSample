@@ -29,6 +29,7 @@ namespace HeskyScript
         private static IDictionary<string, ParameterExpression> _types;
         [Obsolete("not yet used")]
         private static readonly MethodInfo debug = typeof(Logger).GetMethod("Trace", new[] { typeof(string), typeof(object[])});
+        readonly string[] comments = new[] { "#", "//" };
         #endregion
 
         /// <summary>
@@ -56,8 +57,15 @@ namespace HeskyScript
 
             foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
+                if (string.IsNullOrWhiteSpace(line) || comments.Any(c => line.StartsWith(c)))
+                {
+                    log.Debug("Comment Line: {0}", line);
+                    continue;
+                }
+                log.Debug("Processing line");
                 var operation = ProcessLine(param, line, input);
                 expressions.Add(operation);
+                log.Debug("Done w/ line");
             }
 
             var creator = typeof(Output).GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
