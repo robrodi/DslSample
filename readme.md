@@ -1,5 +1,4 @@
-#HeskyScript
-by robrodi
+#DslSample
 
 ## Summary
 A DSL in the DLR to route events into a couple of buckets.
