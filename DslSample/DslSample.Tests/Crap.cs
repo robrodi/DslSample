@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeskyScript.Tests
+namespace DslSample.Tests
 {
     [TestClass]
     public class Crap

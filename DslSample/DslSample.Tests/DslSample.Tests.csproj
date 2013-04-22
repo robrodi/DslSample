@@ -6,8 +6,8 @@
     <ProjectGuid>{19A4CD15-A073-4BA6-9D32-A2C711217EDA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HeskyScript.Tests</RootNamespace>
-    <AssemblyName>HeskyScript.Tests</AssemblyName>
+    <RootNamespace>DslSample.Tests</RootNamespace>
+    <AssemblyName>DslSample.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -26,12 +26,12 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
-    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
     <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
     <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
     <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
@@ -99,9 +99,9 @@
     <Compile Include="SampleTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HeskyScript\HeskyScript.csproj">
+    <ProjectReference Include="..\DslSample\DslSample.csproj">
       <Project>{cdc4a009-6233-4994-9ef0-24c2a3f85ccf}</Project>
-      <Name>HeskyScript</Name>
+      <Name>DslSample</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

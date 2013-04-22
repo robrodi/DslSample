@@ -7,7 +7,7 @@ using System.Reflection;
 
 using NLog;
 
-namespace HeskyScript
+namespace DslSample
 {
     using Runner = Func<Input, Event, Output>;
 

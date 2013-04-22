@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeskyScript", "HeskyScript\HeskyScript.csproj", "{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DslSample", "DslSample\DslSample.csproj", "{CDC4A009-6233-4994-9EF0-24C2A3F85CCF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeskyScript.Tests", "HeskyScript.Tests\HeskyScript.Tests.csproj", "{19A4CD15-A073-4BA6-9D32-A2C711217EDA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DslSample.Tests", "DslSample.Tests\DslSample.Tests.csproj", "{19A4CD15-A073-4BA6-9D32-A2C711217EDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

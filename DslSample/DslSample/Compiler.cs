@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeskyScript
+namespace DslSample
 {
     using Runner = Func<Input, Event, Output>;
 
