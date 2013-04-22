@@ -9,20 +9,20 @@ A DSL in the DLR to route events into a couple of buckets.
 
 ## Goals
 
-### Sample 1 (done)
+### Sample 1: Id equality w/ rewards (done)
     when id is 5 add cookie
     when id is 6 add 2 cookies
     when id is 7 add widget
 
-### Sample 2 (done)
+### Sample 2: Compound Queries & GreaterThan / Less Than  (done)
     when id is 5 and count GreaterThan 4 add cookie
     when id is 6 and count is 3 add 2 cookies
 
-### Sample 3 (done)
+### Sample 3: Input + event conditions (done)
     when mode is Alpha and count GreaterThan 4 add cookie
     when Variant is foxtrot and count is 3 add 2 cookies
 
-### Sample 4 (done)
+### Sample 4: Everyone likes comments(done)
     when id is 5 add cookie
     # I'm a comment
     when id is 7 add widget
