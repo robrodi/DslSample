@@ -17,7 +17,6 @@ namespace HeskyScript
     /// </summary>
     internal class Compiler
     {
-        int lineNumber = 1;
         // nlog logger.
         private static Logger log = LogManager.GetCurrentClassLogger();
 

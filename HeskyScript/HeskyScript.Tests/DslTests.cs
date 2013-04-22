@@ -12,7 +12,7 @@ namespace HeskyScript.Tests
     {
         const string simplestRule = "when id is 3 add spacebuck";
         const string sampleRule1 = "when id is 5 add cookie\r\nwhen id is 6 add 2 cookies\r\nwhen id is 7 add widget";
-        const string sampleRule2 = "when mode is charlie and variant is foxtrot\r\n\twhen id is 5 add cookie\r\n\twhen id is 6 add 2 cookies\r\n\twhen id is 7 add widget";
+        const string sampleRule4 = "when mode is charlie and variant is foxtrot\r\n\twhen id is 5 add cookie\r\n\twhen id is 6 add 2 cookies\r\n\twhen id is 7 add widget";
 
         [TestMethod]
         public void Compile1()
