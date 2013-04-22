@@ -1,10 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DslSample.Tests
 {
@@ -16,10 +11,12 @@ namespace DslSample.Tests
         {
             try
             {
-                var e = new Event(0, 0);
+                new Event(0, 0);
                 Assert.Fail("Should Throw");
             }
+// ReSharper disable EmptyGeneralCatchClause
             catch (Exception)
+// ReSharper restore EmptyGeneralCatchClause
             {
             }
         }

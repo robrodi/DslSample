@@ -1,12 +1,12 @@
-﻿using NLog;
+﻿using System.Globalization;
+
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DslSample
 {
@@ -18,17 +18,19 @@ namespace DslSample
     internal class Compiler
     {
         // nlog logger.
-        private static Logger log = LogManager.GetCurrentClassLogger();
+        private static readonly Logger log = LogManager.GetCurrentClassLogger();
 
         // logger for the running class.
+        /*
         [Obsolete("not yet used")]
         static Logger runningLogger = LogManager.GetLogger("running");
+        */
 
         #region helpers
         private static readonly MethodInfo toInt = typeof(Convert).GetMethod("ToInt32", new[] { typeof(uint) });
         private static IDictionary<string, ParameterExpression> _types;
-        [Obsolete("not yet used")]
-        private static readonly MethodInfo debug = typeof(Logger).GetMethod("Trace", new[] { typeof(string), typeof(object[])});
+        //[Obsolete("not yet used")]
+        //private static readonly MethodInfo debug = typeof(Logger).GetMethod("Trace", new[] { typeof(string), typeof(object[])});
         readonly string[] comments = new[] { "#", "//" };
         #endregion
 
@@ -52,7 +54,7 @@ namespace DslSample
             // result
             ParameterExpression result = Expression.Variable(typeof(Output), "result");
 
-            List<Expression> expressions = new List<Expression>();
+            var expressions = new List<Expression>();
             expressions.AddRange(OutputTypes.Select(t => Expression.Assign(t.Value, Expression.Constant(0))));
 
             foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
@@ -108,7 +110,7 @@ namespace DslSample
             // When
             if (words[0].Equals("when", StringComparison.OrdinalIgnoreCase)) slot++;
 
-            TestExpressionInfo condition =new  TestExpressionInfo();
+            var condition =new  TestExpressionInfo();
 
             Expression criteria = Expression.Constant(true);
 
@@ -121,11 +123,11 @@ namespace DslSample
                 firstCondition = false;
                 condition = TestExpressionInfo.Parse(words[slot++], EnumParsing.Parse<Condition>(words[slot++]), words[slot++]);
                 var conditionalExpression = GetConditionExpression(condition, eventParameter, inputParameter);
-                criteria = BinaryExpression.And(criteria, conditionalExpression);
+                criteria = Expression.And(criteria, conditionalExpression);
             }
 
             // operation
-            Operation operation = EnumParsing.Parse<Operation>(words[slot++]);
+            var operation = EnumParsing.Parse<Operation>(words[slot++]);
 
             Contract.Assert(words.Length > slot);
             var rewardApplied = words[slot++];
@@ -181,12 +183,12 @@ namespace DslSample
                 case Condition.GreaterThanOrEqual:
                 case Condition.Gte:
                     log.Debug("GreaterThan or Equal");
-                    comparer = BinaryExpression.GreaterThanOrEqual;
+                    comparer = Expression.GreaterThanOrEqual;
                     break;
                 case Condition.LessThanOrEqual:
                 case Condition.Lte:
                     log.Debug("LessThan or Equal");
-                    comparer = BinaryExpression.LessThanOrEqual;
+                    comparer = Expression.LessThanOrEqual;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
@@ -208,14 +210,14 @@ namespace DslSample
             Func<Expression, Expression, BinaryExpression> operation = op ==
                 Operation.Add ?
                     (Func<Expression, Expression, BinaryExpression>)Expression.Add :
-                    (Func<Expression, Expression, BinaryExpression>)Expression.Subtract;
+                    Expression.Subtract;
             var useEventCount = (count == 0);
             log.Debug("Using Event count? : {0}.  count: {1}", useEventCount, count);
             Expression ammountToAdd = useEventCount ?
                 (Expression)Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")) :
-                (Expression)Expression.Constant(count);
+                Expression.Constant(count);
 
-            log.Info("{0} {1} {2}", op, useEventCount ? "event.Count" : count.ToString(), rewardToApply);
+            log.Info("{0} {1} {2}", op, useEventCount ? "event.Count" : count.ToString(CultureInfo.InvariantCulture), rewardToApply);
             
             var addition = operation(counter, ammountToAdd);
             return Expression.Assign(counter, addition);

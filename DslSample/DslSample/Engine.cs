@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-
-using NLog;
 
 namespace DslSample
 {
@@ -13,7 +9,6 @@ namespace DslSample
 
     public class Engine
     {
-        static Logger l = LogManager.GetCurrentClassLogger();
         readonly string _rule;
         readonly Runner _runner;
 
@@ -33,7 +28,7 @@ namespace DslSample
 
         public class TestWrapper
         {
-            Engine _engine;
+            readonly Engine _engine;
             
             public TestWrapper(Engine engine) {
                 Contract.Requires(engine != null);

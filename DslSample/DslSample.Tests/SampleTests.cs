@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+
 using System.Collections.Generic;
-using System.Linq;
+
 using FluentAssertions;
 
 namespace DslSample.Tests
@@ -53,7 +53,7 @@ when id is 9 add 2 cookies  ";
         public void Sample3()
         {
             IEnumerable<Event> events = new[] { new Event(5, 5), new Event(5, 1), new Event(6, 3), new Event(7, 2) };
-            var result = Run(events, sampleRule3, Mode.Alpha, Variant.Foxtrot);
+            var result = Run(events, sampleRule3, Mode.Alpha);
             result.Cookies.Should().Be(7, "5 cookies for event number 5 plus 2 cookies for event 6 should be 7 cookies!");
             result.Widgets.Should().Be(0);
             result.SpaceBucks.Should().Be(0);
@@ -63,7 +63,7 @@ when id is 9 add 2 cookies  ";
         public void Sample4()
         {
             IEnumerable<Event> events = new[] { new Event(5, 5), new Event(5, 1), new Event(6, 3), new Event(7, 2), new Event(9, 1) };
-            var result = Run(events, sampleRule4, Mode.Alpha, Variant.Foxtrot);
+            var result = Run(events, sampleRule4, Mode.Alpha);
             result.Cookies.Should().Be(10, "6 cookies for event number 5 plus 2 cookies for event 6 plus two for event 9 should be 10 cookies!");
             result.Widgets.Should().Be(2, "2 widgets for event 7");
             result.SpaceBucks.Should().Be(0);
