@@ -44,3 +44,4 @@ A DSL in the DLR to route events into a couple of buckets.
 ## TODO:
 * Make the lookup on input runtime rather than CompileTime? 
 * I like the idea of tabbing, but then things get weird
+* Tie it into Reactive?
