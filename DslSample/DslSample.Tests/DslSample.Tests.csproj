@@ -101,12 +101,6 @@
     <Compile Include="TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DslSample\DslSample.csproj">
-      <Project>{cdc4a009-6233-4994-9ef0-24c2a3f85ccf}</Project>
-      <Name>DslSample</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
@@ -115,6 +109,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DslSample\DslSample.csproj">
+      <Project>{cdc4a009-6233-4994-9ef0-24c2a3f85ccf}</Project>
+      <Name>DslSample</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

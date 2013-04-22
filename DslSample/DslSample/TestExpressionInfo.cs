@@ -24,6 +24,7 @@ namespace DslSample
 
         public Expression Value { get { return Expression.Constant(_value); } }
 
+        #region Constructors
         public TestExpressionInfo(EventCriteria criteria, Condition condition, object value) :
             this(criteria, InputCriteria.None, condition, value)
         {
@@ -45,7 +46,9 @@ namespace DslSample
             _value = value;
             Source = Get(globalCriteria, eventCriteria);
         }
+        #endregion
 
+        [Pure]
         internal static TestExpressionInfo Parse(string critiera, Condition condition, string value)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(critiera));

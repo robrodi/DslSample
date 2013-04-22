@@ -34,10 +34,13 @@ namespace DslSample
         public class TestWrapper
         {
             Engine _engine;
+            
             public TestWrapper(Engine engine) {
                 Contract.Requires(engine != null);
                 _engine = engine; 
             }
+
+            [Pure]
             public Runner Compile()
             {
                 return _engine._runner;

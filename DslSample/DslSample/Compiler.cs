@@ -89,6 +89,7 @@ namespace DslSample
             }
         }
 
+        [Pure]
         private static bool IsOperation(string word)
         {
             return !string.IsNullOrWhiteSpace(word) && Enum.GetNames(typeof(Operation)).Any(w => w.Equals(word, StringComparison.OrdinalIgnoreCase));
@@ -111,6 +112,7 @@ namespace DslSample
 
             Expression criteria = Expression.Constant(true);
 
+            // loop through the conditions until you find an operation (Add/subtract)
             bool firstCondition = true;
             while(slot < words.Length && !IsOperation(words[slot]))
             {
@@ -144,6 +146,7 @@ namespace DslSample
             return Expression.IfThen(criteria, updateCount);
         }
 
+        [Pure]
         private static BinaryExpression GetConditionExpression(TestExpressionInfo c, Expression eventParameter, Expression inputParameter)
         {
             Contract.Requires(eventParameter != null);
@@ -228,5 +231,4 @@ namespace DslSample
         //    return Expression.Call(typeof(Logger), "Debug", new[] { typeof(string), typeof(object[]) }, expressions.ToArray());
         //}
     }
-
 }
