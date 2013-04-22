@@ -1,4 +1,5 @@
 #HeskyScript
+by robrodi
 
 ## Summary
 A DSL in the DLR to route events into a couple of buckets.
@@ -39,3 +40,7 @@ A DSL in the DLR to route events into a couple of buckets.
         when id is 5 add cookie
         when id is 6 add 2 cookies
         when id is 7 add widget
+
+## TODO:
+* Make the lookup on input runtime rather than CompileTime? 
+* I like the idea of tabbing, but then things get weird
