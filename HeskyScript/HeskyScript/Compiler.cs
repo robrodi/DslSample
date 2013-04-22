@@ -199,7 +199,7 @@ namespace HeskyScript
         private static BinaryExpression GetOperationToUpdateCount(Operation op, ParameterExpression eventParam, int count, string rewardToApply)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rewardToApply), "Invalid reward");
-            if (!OutputTypes.ContainsKey(rewardToApply.ToLower())) throw new ArgumentException("Cannot find key: " + rewardToApply);
+            Contract.Assert(OutputTypes.ContainsKey(rewardToApply.ToLower()), "Cannot find key: " + rewardToApply);
             var counter = OutputTypes[rewardToApply.ToLower()];
 
             Func<Expression, Expression, BinaryExpression> operation = op ==
@@ -218,15 +218,15 @@ namespace HeskyScript
             return Expression.Assign(counter, addition);
         }
 
-        [Obsolete("not yet used")]
-        static Expression Debug2(string format, params Expression[] parameters)
-        {
-            Contract.Requires(!string.IsNullOrWhiteSpace(format), "bad log");
+        //[Obsolete("not yet used")]
+        //static Expression Debug2(string format, params Expression[] parameters)
+        //{
+        //    Contract.Requires(!string.IsNullOrWhiteSpace(format), "bad log");
 
-            Expression[] paramList = new[] { Expression.Constant(format) };
-            var expressions = parameters != null && parameters.Length>0 ? paramList.Concat(parameters) : paramList;
-            return Expression.Call(typeof(Logger), "Debug", new[] { typeof(string), typeof(object[]) }, expressions.ToArray());
-        }
+        //    Expression[] paramList = new[] { Expression.Constant(format) };
+        //    var expressions = parameters != null && parameters.Length>0 ? paramList.Concat(parameters) : paramList;
+        //    return Expression.Call(typeof(Logger), "Debug", new[] { typeof(string), typeof(object[]) }, expressions.ToArray());
+        //}
     }
 
 }

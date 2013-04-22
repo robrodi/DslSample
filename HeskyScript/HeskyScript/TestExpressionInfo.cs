@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HeskyScript
 {
-    struct TestExpressionInfo
+    public struct TestExpressionInfo
     {
         public enum ComparisonSource
         {
