@@ -125,10 +125,19 @@ namespace HeskyScript.Tests
         [TestMethod]
         public void GreaterThan()
         {
-            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5,1) };
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
             const string compoundRule = "when id GreaterThan 3 add spacebuck";
             var output = Run(events, compoundRule);
             output.SpaceBucks.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void GreaterThanOrEqual()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
+            const string compoundRule = "when id GreaterThanOrEqual 3 add spacebuck";
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(2);
         }
 
         [TestMethod]
@@ -143,10 +152,19 @@ namespace HeskyScript.Tests
         [TestMethod]
         public void lt()
         {
-            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1), new Event(5, 1) };
             const string compoundRule = "when id lt 4 add spacebuck";
             var output = Run(events, compoundRule);
             output.SpaceBucks.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void lte()
+        {
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1), new Event(4, 1) };
+            const string compoundRule = "when id lte 4 add spacebuck";
+            var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(2);
         }
 
         [TestMethod]

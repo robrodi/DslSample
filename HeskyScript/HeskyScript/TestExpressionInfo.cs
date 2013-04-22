@@ -73,6 +73,8 @@ namespace HeskyScript
                 }
             }
 
+            Contract.Assert(val != null);
+
             return new TestExpressionInfo(e.HasValue ? e.Value : EventCriteria.None,
                                             g.HasValue ? g.Value : InputCriteria.None,
                                             condition,

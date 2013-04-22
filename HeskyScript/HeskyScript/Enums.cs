@@ -17,13 +17,21 @@ namespace HeskyScript
     public enum Condition
     {
         Is,
+        Equal,
+        Eq,
         NotEqual,
+        Neq,
         Greater,
         GreaterThan,
-        gt,
+        Gt,
+        GreaterThanOrEqual,
+        Gte,
         Less,
         LessThan,
-        lt
+        Lt,
+        LessThanOrEqual,
+        Lte
+
     }
 
     public enum EventCriteria

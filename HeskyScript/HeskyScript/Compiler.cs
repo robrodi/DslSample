@@ -17,6 +17,7 @@ namespace HeskyScript
     /// </summary>
     internal class Compiler
     {
+        int lineNumber = 1;
         // nlog logger.
         private static Logger log = LogManager.GetCurrentClassLogger();
 
@@ -104,7 +105,7 @@ namespace HeskyScript
             Expression criteria = Expression.Constant(true);
 
             bool firstCondition = true;
-            while(!IsOperation(words[slot]))
+            while(slot < words.Length && !IsOperation(words[slot]))
             {
                 Contract.Assert(words.Length > slot + 3);
                 if (!firstCondition) slot++;
@@ -147,24 +148,37 @@ namespace HeskyScript
             switch (c.Condition)
             {
                 case Condition.Is:
+                case Condition.Equal:
+                case Condition.Eq:
                     log.Debug("Equal");
                     comparer = Expression.Equal;
                     break;
                 case Condition.NotEqual:
+                case Condition.Neq:
                     log.Debug("NotEqual");
                     comparer = Expression.NotEqual;
                     break;
                 case Condition.Greater:
                 case Condition.GreaterThan:
-                case Condition.gt:
+                case Condition.Gt:
                     log.Debug("GreaterThan");
                     comparer = Expression.GreaterThan;
                     break;
                 case Condition.Less:
                 case Condition.LessThan:
-                case Condition.lt:
+                case Condition.Lt:
                     log.Debug("LessThan");
                     comparer = Expression.LessThan;
+                    break;
+                case Condition.GreaterThanOrEqual:
+                case Condition.Gte:
+                    log.Debug("GreaterThan or Equal");
+                    comparer = BinaryExpression.GreaterThanOrEqual;
+                    break;
+                case Condition.LessThanOrEqual:
+                case Condition.Lte:
+                    log.Debug("LessThan or Equal");
+                    comparer = BinaryExpression.LessThanOrEqual;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
