@@ -28,8 +28,11 @@ local.properties
 # PDT-specific
 .buildpath
 
-
 #################
+## Resharper
+#################
+*.sln.DotSettings
+
 ## Visual Studio
 #################
 
