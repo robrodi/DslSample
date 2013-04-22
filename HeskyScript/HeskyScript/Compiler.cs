@@ -136,10 +136,8 @@ namespace HeskyScript
                 rewardApplied = words[slot++];
             }
 
-
-            log.Info("when {0} {1} {2}", condition.Event, condition, condition.Value);
+            log.Info("when {0} {1} {2}", condition.Event, condition.Condition, condition.Value);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
-
 
             // Operation
             var updateCount = GetOperationToUpdateCount(operation, eventParameter, count, rewardApplied);
@@ -214,7 +212,7 @@ namespace HeskyScript
                 (Expression)Expression.Call(toInt, Expression.PropertyOrField(eventParam, "Count")) :
                 (Expression)Expression.Constant(count);
 
-            log.Info("{0} {1} {2}", op, useEventCount ? "eventCount" : count.ToString(), rewardToApply);
+            log.Info("{0} {1} {2}", op, useEventCount ? "event.Count" : count.ToString(), rewardToApply);
             
             var addition = operation(counter, ammountToAdd);
             return Expression.Assign(counter, addition);

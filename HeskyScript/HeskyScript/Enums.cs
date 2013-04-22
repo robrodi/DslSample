@@ -86,9 +86,7 @@ namespace HeskyScript
 
         public static Output Create(int cookies, int spaceBucks, int widgets)
         {
-            var result = new Output(cookies, spaceBucks, widgets);
-            Console.WriteLine(result);
-            return result;
+            return new Output(cookies, spaceBucks, widgets);
         }
 
         public override string ToString()
