@@ -33,7 +33,7 @@ namespace HeskyScript
         Count
     }
 
-    public enum GlobalCriteria
+    public enum InputCriteria
     {
         None,
         Mode,

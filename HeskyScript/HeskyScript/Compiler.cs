@@ -7,10 +7,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Runner = System.Func<HeskyScript.Event, HeskyScript.Output>;
 
 namespace HeskyScript
 {
+    using Runner = Func<Input, Event, Output>;
+
     /// <summary>
     /// Compiles the rules.
     /// </summary>
@@ -40,7 +41,10 @@ namespace HeskyScript
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(rules));
             log.Trace("Rules: {0}", rules);
-            // input param
+
+            // input params
+            ParameterExpression input = Expression.Parameter(typeof(Input), "input");
+            Contract.Assert(input!= null);
             ParameterExpression param = Expression.Parameter(typeof(Event), "event");
             Contract.Assert(param != null);
 
@@ -52,7 +56,7 @@ namespace HeskyScript
 
             foreach (var line in rules.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
-                var operation = ProcessLine(param, line);
+                var operation = ProcessLine(param, line, input);
                 expressions.Add(operation);
             }
 
@@ -63,7 +67,7 @@ namespace HeskyScript
                 expressions
             );
 
-            return Expression.Lambda<Func<Event, Output>>(block, param).Compile();
+            return Expression.Lambda<Func<Input, Event, Output>>(block, input, param).Compile();
         }
 
         private static IDictionary<string, ParameterExpression> OutputTypes
@@ -77,74 +81,12 @@ namespace HeskyScript
             }
         }
 
-        struct TestExpressionInfo
-        {
-            public readonly EventCriteria EventCriteria;
-            public readonly GlobalCriteria GlobalCriteria;
-            public  readonly Condition Condition;
-            private readonly object _value;
-            public  Expression Value { get { return Expression.Constant(_value); } }
-
-            public TestExpressionInfo(EventCriteria criteria, Condition condition, object value) : 
-                this(criteria, GlobalCriteria.None, condition, value)
-            {
-            }
-            public TestExpressionInfo(GlobalCriteria criteria, Condition condition, object value) :
-                this(EventCriteria.None, criteria, condition, value)
-            {
-            }
-            private TestExpressionInfo(EventCriteria eventCriteria, GlobalCriteria globalCriteria, Condition condition, object value) 
-            {
-                Contract.Requires(value != null);
-                Contract.Requires(eventCriteria != HeskyScript.EventCriteria.None || globalCriteria != HeskyScript.GlobalCriteria.None);
-                Contract.Requires(eventCriteria == HeskyScript.EventCriteria.None || globalCriteria == HeskyScript.GlobalCriteria.None);
-
-                EventCriteria = eventCriteria;
-                GlobalCriteria = globalCriteria;
-                Condition = condition;
-                _value = value;
-            }
-            internal static TestExpressionInfo Parse(string critiera, Condition condition, string value)
-            {
-                Contract.Requires(!string.IsNullOrWhiteSpace(critiera));
-                Contract.Requires(value != null);
-
-                var g = TryParse<GlobalCriteria>(critiera);
-                var e = TryParse<EventCriteria>(critiera);
-
-                object val = null;
-                if (e.HasValue)
-                {
-                    val = UInt32.Parse(value);
-                }
-                if (g.HasValue)
-                {
-                    switch (g.Value) 
-                    {
-                        case GlobalCriteria.Mode:
-                            val = Parse<Mode>(value);
-                            break;
-                        case GlobalCriteria.Variant:
-                            val = Parse<Variant>(value);
-                            break;
-                        default: throw new ArgumentOutOfRangeException();
-                    }
-                }
-                
-
-                return new TestExpressionInfo(e.HasValue ? e.Value : EventCriteria.None, 
-                                                g.HasValue ? g.Value : GlobalCriteria.None, 
-                                                condition, 
-                                                val);
-            }
-        }
-
         private static bool IsOperation(string word)
         {
             return !string.IsNullOrWhiteSpace(word) && Enum.GetNames(typeof(Operation)).Any(w => w.Equals(word, StringComparison.OrdinalIgnoreCase));
         }
         [Pure]
-        private static ConditionalExpression ProcessLine(ParameterExpression eventParameter, string line)
+        private static ConditionalExpression ProcessLine(ParameterExpression eventParameter, string line, ParameterExpression inputParameter)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(line), "Empty line");
             Contract.Requires(eventParameter != null, "eventParameter is null");
@@ -167,13 +109,13 @@ namespace HeskyScript
                 Contract.Assert(words.Length > slot + 3);
                 if (!firstCondition) slot++;
                 firstCondition = false;
-                condition = TestExpressionInfo.Parse(words[slot++], Parse<Condition>(words[slot++]), words[slot++]);
-                var conditionalExpression = GetConditionExpression(condition, eventParameter);
+                condition = TestExpressionInfo.Parse(words[slot++], EnumParsing.Parse<Condition>(words[slot++]), words[slot++]);
+                var conditionalExpression = GetConditionExpression(condition, eventParameter, inputParameter);
                 criteria = BinaryExpression.And(criteria, conditionalExpression);
             }
 
             // operation
-            Operation operation = Parse<Operation>(words[slot++]);
+            Operation operation = EnumParsing.Parse<Operation>(words[slot++]);
 
             Contract.Assert(words.Length > slot);
             var rewardApplied = words[slot++];
@@ -187,7 +129,7 @@ namespace HeskyScript
             }
 
 
-            log.Info("when {0} {1} {2}", condition.EventCriteria, condition, condition.Value);
+            log.Info("when {0} {1} {2}", condition.Event, condition, condition.Value);
             rewardApplied = rewardApplied.EndsWith("s") ? rewardApplied : rewardApplied + "s";
 
 
@@ -196,26 +138,11 @@ namespace HeskyScript
             return Expression.IfThen(criteria, updateCount);
         }
 
-        [Pure]
-        private static TEnum? TryParse<TEnum>(string word) where TEnum : struct
+        private static BinaryExpression GetConditionExpression(TestExpressionInfo c, Expression eventParameter, Expression inputParameter)
         {
-            Contract.Requires(!string.IsNullOrWhiteSpace(word));
-            TEnum value;
-            var success = Enum.TryParse(word, true, out value);
-            log.Debug("TryParse: {0} success? {1}.  Input: <{2}>", typeof(TEnum).Name, success, word);
-            return success ? value : (TEnum?)null;
-        }
-        [Pure]
-        private static TEnum Parse<TEnum>(string word) where TEnum : struct
-        {
-            Contract.Requires(!string.IsNullOrWhiteSpace(word));
-            TEnum value;
-            Contract.Assert(Enum.TryParse(word, true, out value), string.Format("{0} missing.  Found <{1}>", typeof(TEnum).Name, word));
-            return value;
-        }
+            Contract.Requires(eventParameter != null);
+            Contract.Requires(inputParameter != null);
 
-        private static BinaryExpression GetConditionExpression(TestExpressionInfo c, Expression eventParameter)
-        {
             Func<Expression, Expression, BinaryExpression> comparer;
             switch (c.Condition)
             {
@@ -243,7 +170,10 @@ namespace HeskyScript
                     throw new ArgumentOutOfRangeException("c", c, "Invalid condition");
             }
 
-            return comparer(Expression.PropertyOrField(eventParameter, c.EventCriteria.ToString()), c.Value);
+            var comparisonSource = c.Source == TestExpressionInfo.ComparisonSource.Event ? eventParameter : inputParameter;
+            var comparisonParameterName = c.Source == TestExpressionInfo.ComparisonSource.Event ? c.Event.ToString() : c.Input.ToString();
+            var comparisonSourceParameter = Expression.PropertyOrField(comparisonSource, comparisonParameterName);
+            return comparer(comparisonSourceParameter, c.Value);
         }
 
         [Pure]
@@ -278,7 +208,6 @@ namespace HeskyScript
             var expressions = parameters != null && parameters.Length>0 ? paramList.Concat(parameters) : paramList;
             return Expression.Call(typeof(Logger), "Debug", new[] { typeof(string), typeof(object[]) }, expressions.ToArray());
         }
-
     }
 
 }

@@ -182,6 +182,15 @@ namespace HeskyScript.Tests
             const string compoundRule = "when mode is Charlie add 1 spacebuck";
             IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
             var output = Run(events, compoundRule);
+            output.SpaceBucks.Should().Be(2);
+        }
+
+        [TestMethod]
+        public void EventAndGlobalValue()
+        {
+            const string compoundRule = "when mode is Charlie and id is 3 add 1 spacebuck";
+            IEnumerable<Event> events = new[] { new Event(3, 1), new Event(5, 1) };
+            var output = Run(events, compoundRule);
             output.SpaceBucks.Should().Be(1);
         }
 

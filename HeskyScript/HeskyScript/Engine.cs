@@ -4,12 +4,12 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Runner = System.Func<HeskyScript.Event, HeskyScript.Output>;
 
 using NLog;
 
 namespace HeskyScript
 {
+    using Runner = Func<Input, Event, Output>;
 
     public class Engine
     {
@@ -28,7 +28,7 @@ namespace HeskyScript
         public Output Run(IEnumerable<Event> events, Input input)
         {
             Contract.Requires(events != null);
-            return events.Select(_runner).Aggregate(Output.Add);
+            return events.Select(e => _runner(input, e)).Aggregate(Output.Add);
         }
 
         public class TestWrapper
